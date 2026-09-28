@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@theme {
+  /* Neutral base */
+  --color-background: #FAFAFA;
+  --color-cards: #FFFFFF;
+  --color-border: #E5E7EB;
+  --color-muted-bg: #F3F4F6;
+
+  /* Text */
+  --color-text: #1F2937;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+
+  /* Accents (used sparingly) */
+  --color-primary: #6D28D9;
+  --color-primary-hover: #5B21B6;
+  --color-primary-soft: #F5F3FF;
+
+  --color-teal: #0D9488;
+  --color-teal-soft: #F0FDFA;
+
+  /* Aliases for backward compatibility */
+  --color-accent: #6D28D9;
+  --color-accent-2: #0D9488;
+  --color-accent-soft: #F5F3FF;
+  --color-dark: #1F2937;
+
+  --font-poppins: 'Poppins', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-background);
+  font-family: var(--font-inter);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-poppins);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+section[id] {
+  scroll-margin-top: 80px;
+}
+
+/* Remove old gradient helper — replace with neutral */
+.brand-gradient {
+  background-color: #1F2937; /* solid dark gray for footer */
+}
+
+.brand-gradient-text {
+  color: #6D28D9; /* solid violet text, no gradient */
+}
+
+.mint-section {
+  background-color: #F3F4F6;
+}
+
+/* Very subtle hover lift */
+.card-hover {
+  transition: all 0.2s ease;
+}
+.card-hover:hover {
+  border-color: #D1D5DB;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
