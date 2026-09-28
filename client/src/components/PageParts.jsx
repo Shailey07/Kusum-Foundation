@@ -2,26 +2,22 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Users } from 'lucide-react';
+import { fallbackPhoto } from '../data/content';
 
 // Shared building blocks for the public marketing pages so styling stays
-// consistent. All images degrade to a rose gradient if the asset is missing.
+// consistent. All images degrade to a REAL bundled photo if the asset is
+// missing — never a coloured placeholder.
 export const IMG_FALLBACK =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23E8547E'/%3E%3Cstop offset='1' stop-color='%23B31E64'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='900' height='600' fill='url(%23g)'/%3E%3C/svg%3E";
 
-// Deterministic small hash so the same subject always gets the same fallback
-// photo (no flicker between renders).
-const hashKey = (str = '') => {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
-  return h % 1000;
-};
-
 // Renders the given image and, if it is missing or fails to load, degrades to a
-// local rose-gradient placeholder that ships with the app. No external/online
-// images are ever requested — only assets bundled with the site are used.
+// real bundled photo from the local pool (chosen deterministically by seed so
+// it stays stable across renders). The gradient data-URI is only a last-ditch
+// resort that in practice never shows, because the pool photos ship with the
+// site. No external/online images are ever requested.
 export const SmartImg = ({ src, alt = '', className = '', seed }) => {
   const [stage, setStage] = useState(0);
-  const chain = [src, IMG_FALLBACK].filter(Boolean);
+  const chain = [src, fallbackPhoto(seed || alt || src || ''), IMG_FALLBACK].filter(Boolean);
   const current = chain[Math.min(stage, chain.length - 1)];
   return (
     <img

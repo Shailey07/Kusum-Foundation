@@ -48,6 +48,25 @@ const pluck = (arr, seed) => {
 export const flick = (kw, lock) => pluck(PHOTOS, `${kw}|${lock}`);
 export const face = (gender, n) => pluck(PORTRAITS, `${gender}|${n}`);
 
+// Sanitiser used by SiteData. Guarantees any image reference resolves to a
+// bundled local photo. A path we ship (/images/… or an inline data: URI) is
+// kept as-is; ANYTHING else — an online URL (loremflickr / randomuser / picsum /
+// http…), an ephemeral server upload (/uploads/…) that is wiped on the host, or
+// an empty value — is rewritten to a stable photo from the local pool. This
+// keeps the gallery free of broken/online images even when the CMS database
+// still holds old external or /uploads URLs.
+const isBundled = (u) =>
+  typeof u === 'string' && (u.startsWith('/images/') || u.startsWith('data:'));
+export const localImage = (url, seed = '') =>
+  isBundled(url) ? url : pluck(PHOTOS, `${seed}|${url || ''}`);
+export const localPortrait = (url, seed = '') =>
+  isBundled(url) ? url : pluck(PORTRAITS, `${seed}|${url || ''}`);
+
+// A real bundled photo for <SmartImg> to fall back to if its given src ever
+// fails to load — so a broken image degrades to a genuine photo, NEVER a
+// coloured/gradient placeholder. Deterministic by seed → no flicker.
+export const fallbackPhoto = (seed = '') => pluck(PHOTOS, `fallback|${seed}`);
+
 // Theme keywords for auto-filling an empty "From the field" gallery with
 // matching real photos. Known programmes/projects map to hand-picked keywords;
 // anything else (e.g. a brand-new item added in the admin panel) derives its

@@ -19,15 +19,47 @@ const pick = (apiArr, fb) =>
 const withIcons = (programs) =>
   (programs || []).map((p) => ({ ...p, icon: getIcon(p.iconName) }));
 
+// Force every image reference — whether it came from the API/database or the
+// static fallback — to a bundled local photo. CMS records saved earlier may
+// still carry old online URLs (loremflickr / randomuser / picsum) or /uploads/
+// paths that are wiped on the host and 404 in the browser; rewriting them here
+// guarantees the public site never renders a broken or online image.
+const seedOf = (it) =>
+  it.title || it.name || it.slug || it.category || it._id || '';
+const fixImages = (it, portrait = false) => {
+  if (!it || typeof it !== 'object') return it;
+  const one = portrait ? fallback.localPortrait : fallback.localImage;
+  const seed = seedOf(it);
+  const out = { ...it };
+  if ('image' in out) out.image = one(out.image, seed);
+  if ('src' in out) out.src = one(out.src, seed);
+  if ('avatar' in out) out.avatar = fallback.localPortrait(out.avatar, seed);
+  if (Array.isArray(out.gallery)) {
+    out.gallery = out.gallery.map((g, i) =>
+      typeof g === 'string' ? fallback.localImage(g, `${seed}|g${i}`) : g);
+  }
+  return out;
+};
+const cleanList = (arr, portrait = false) =>
+  (arr || []).map((x) => fixImages(x, portrait));
+
+// Named site images (hero, about, etc.) — keep bundled paths, rewrite any
+// online/uploads override coming from the settings singleton.
+const cleanImages = (obj = {}) =>
+  Object.fromEntries(
+    Object.entries(obj).map(([k, v]) =>
+      [k, typeof v === 'string' ? fallback.localImage(v, k) : v]),
+  );
+
 // The API groups content by section: { story:[], gallery:[], program:[], ... }
 const buildContent = (grouped = {}) => ({
-  stories: pick(grouped.story, fallback.stories),
-  galleryItems: pick(grouped.gallery, fallback.galleryItems),
-  programs: withIcons(pick(grouped.program, fallback.programs)),
-  projects: pick(grouped.project, fallback.projects),
-  news: pick(grouped.news, fallback.news),
-  events: pick(grouped.event, fallback.events),
-  press: pick(grouped.press, fallback.press),
+  stories: cleanList(pick(grouped.story, fallback.stories), true),
+  galleryItems: cleanList(pick(grouped.gallery, fallback.galleryItems)),
+  programs: withIcons(cleanList(pick(grouped.program, fallback.programs))),
+  projects: cleanList(pick(grouped.project, fallback.projects)),
+  news: cleanList(pick(grouped.news, fallback.news)),
+  events: cleanList(pick(grouped.event, fallback.events)),
+  press: cleanList(pick(grouped.press, fallback.press)),
   reports: pick(grouped.report, fallback.reports),
 });
 
@@ -35,7 +67,7 @@ const buildContent = (grouped = {}) => ({
 const buildSettings = (s = {}) => ({
   orgInfo: { ...fallback.orgInfo, ...(s.orgInfo || {}) },
   socials: { ...fallback.socials, ...(s.socials || {}) },
-  siteImages: { ...fallback.siteImages, ...(s.siteImages || {}) },
+  siteImages: cleanImages({ ...fallback.siteImages, ...(s.siteImages || {}) }),
   impactStats: pick(s.impactStats, fallback.impactStats),
   impactHighlights: pick(s.impactHighlights, fallback.impactHighlights),
   fundUtilization: pick(s.fundUtilization, fallback.fundUtilization),
