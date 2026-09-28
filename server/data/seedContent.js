@@ -2,15 +2,37 @@
 // with an empty ContentItem / Setting collection. After that, everything is
 // editable from the admin panel (Content Manager + Site Settings).
 //
-// Images use keyless, hotlinkable real-photo services so the site shows real
-// photography out of the box; the admin can replace any of them with the
-// NGO's own uploaded photos.
-//   flick(keywords, lock)  -> a real, theme-matched photo (loremflickr)
-//   face(gender, n)        -> a real portrait photo (randomuser.me, 0..99)
-const flick = (kw, lock, w = 800, h = 600) =>
-  `https://loremflickr.com/${w}/${h}/${kw}?lock=${lock}`;
-const face = (gender, n) =>
-  `https://randomuser.me/api/portraits/${gender}/${n}.jpg`;
+// Images are 100% LOCAL — the foundation's own uploaded photos, bundled with
+// the frontend under client/public/images/photos and served from there. NO
+// external/online image service is used. flick()/face() keep their signatures
+// and return a stable local path; the admin can still replace any of them.
+//   flick(keywords, lock)  -> a real field/programme photo (from the pool)
+//   face(gender, n)        -> a real portrait photo (from the portrait pool)
+const PHOTOS = [
+  'photo-01.png', 'photo-02.png', 'photo-03.jpg', 'photo-04.jpg', 'photo-05.png',
+  'photo-06.jpg', 'photo-07.jpg', 'photo-08.png', 'photo-09.jpg', 'photo-10.png',
+  'photo-11.jpg', 'photo-12.jpg', 'photo-13.jpg', 'photo-14.png', 'photo-15.png',
+  'photo-16.jpg', 'photo-17.jpg', 'photo-18.jpg', 'photo-19.jpg', 'photo-20.jpg',
+  'photo-21.jpg', 'photo-22.jpg', 'photo-23.jpg', 'photo-24.jpg', 'photo-25.jpg',
+  'photo-26.jpg', 'photo-27.webp', 'photo-28.webp', 'photo-29.jpg', 'photo-30.jpg',
+  'photo-31.jpg', 'photo-32.jpg', 'photo-33.jpg', 'photo-34.jpg', 'photo-35.jpg',
+  'photo-36.jpg', 'photo-37.jpg', 'photo-38.jpg', 'photo-39.jpg', 'photo-40.jpg',
+  'photo-41.webp', 'photo-42.jpg', 'photo-43.jpg', 'photo-44.jpg', 'photo-45.jpg',
+  'photo-46.jpg', 'photo-47.jpg', 'photo-48.jpg', 'photo-49.jpg', 'photo-50.jpg',
+  'photo-51.jpg', 'photo-52.jpg', 'photo-53.jpg',
+].map((f) => `/images/photos/${f}`);
+const PORTRAITS = [
+  'photo-01.png', 'photo-13.jpg', 'photo-14.png', 'photo-30.jpg', 'photo-31.jpg',
+  'photo-32.jpg', 'photo-33.jpg', 'photo-35.jpg', 'photo-36.jpg', 'photo-37.jpg',
+].map((f) => `/images/photos/${f}`);
+const pluck = (arr, seed) => {
+  const s = String(seed);
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return arr[h % arr.length];
+};
+const flick = (kw, lock) => pluck(PHOTOS, `${kw}|${lock}`);
+const face = (gender, n) => pluck(PORTRAITS, `${gender}|${n}`);
 
 const stories = [
   {
@@ -351,11 +373,11 @@ const press = [
 ];
 
 const reports = [
-  { year: 2025, title: 'Annual Report 2024–25', type: 'Annual', pages: 32, summary: 'Programmes, reach, stories and audited highlights for the year.', fileUrl: '' },
-  { year: 2025, title: 'Audited Financial Statement 2024–25', type: 'Financial', pages: 18, summary: 'Balance sheet, income & expenditure, and receipts & payments.', fileUrl: '' },
-  { year: 2025, title: 'Independent Auditor’s Report 2024–25', type: 'Audit', pages: 8, summary: 'Statutory audit opinion by our chartered accountants.', fileUrl: '' },
-  { year: 2024, title: 'Annual Report 2023–24', type: 'Annual', pages: 28, summary: 'A year of health camps, flood relief and SHG growth.', fileUrl: '' },
-  { year: 2024, title: 'Audited Financial Statement 2023–24', type: 'Financial', pages: 16, summary: 'Full financial statements for FY 2023–24.', fileUrl: '' },
+  { year: 2025, title: 'Annual Report 2024–25', type: 'Annual', pages: 14, summary: 'Programmes, reach, stories and audited highlights for the year.', fileUrl: '/reports/annual-report-2024-25.pdf' },
+  { year: 2025, title: 'Audited Financial Statement 2024–25', type: 'Financial', pages: 10, summary: 'Balance sheet, income & expenditure, and receipts & payments.', fileUrl: '/reports/audited-financial-statement-2024-25.pdf' },
+  { year: 2025, title: 'Independent Auditor’s Report 2024–25', type: 'Audit', pages: 9, summary: 'Statutory audit opinion by our chartered accountants.', fileUrl: '/reports/independent-auditor-report-2024-25.pdf' },
+  { year: 2024, title: 'Annual Report 2023–24', type: 'Annual', pages: 14, summary: 'A year of health camps, flood relief and SHG growth.', fileUrl: '/reports/annual-report-2023-24.pdf' },
+  { year: 2024, title: 'Audited Financial Statement 2023–24', type: 'Financial', pages: 10, summary: 'Full financial statements for FY 2023–24.', fileUrl: '/reports/audited-financial-statement-2023-24.pdf' },
 ];
 
 const seedSettings = {
@@ -365,7 +387,7 @@ const seedSettings = {
     tagline: 'Empowering rural women, youth and families in Bihar since 2008.',
     address: 'Katesar, Saran District, Bihar 841301, India',
     phone: '+91 7419921792',
-    email: 'kusumfoundationinfo@gmail.com',
+    email: 'kusumfoundatiooinfo@gmail.com',
     registration: {
       society: 'BIH/2008/0192847 (Societies Registration Act, 1860)',
       pan: 'AABTK1907K',

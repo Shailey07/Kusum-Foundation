@@ -16,14 +16,12 @@ const hashKey = (str = '') => {
   return h % 1000;
 };
 
-// Renders a real photo and degrades gracefully: the given src first, then a
-// real photo from picsum (still a genuine photograph), and only if BOTH fail
-// does it settle on the rose gradient. This keeps real imagery on screen even
-// when a single upstream URL is momentarily unavailable.
+// Renders the given image and, if it is missing or fails to load, degrades to a
+// local rose-gradient placeholder that ships with the app. No external/online
+// images are ever requested — only assets bundled with the site are used.
 export const SmartImg = ({ src, alt = '', className = '', seed }) => {
   const [stage, setStage] = useState(0);
-  const picsum = `https://picsum.photos/seed/${hashKey(seed || alt || src)}/900/600`;
-  const chain = [src || picsum, picsum, IMG_FALLBACK];
+  const chain = [src, IMG_FALLBACK].filter(Boolean);
   const current = chain[Math.min(stage, chain.length - 1)];
   return (
     <img

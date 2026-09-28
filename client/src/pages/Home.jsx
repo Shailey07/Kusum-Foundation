@@ -120,7 +120,7 @@ const Home = () => {
 
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }} className="relative">
               <SmartImg
-                src={siteImages?.heroImage || '/images/hero.jpeg'}
+                src="/images/gallery1.jpeg"
                 alt="Women and youth of rural Bihar supported by Kusum Foundation"
                 seed="kusum-hero-women"
                 className="w-full h-80 sm:h-96 object-cover rounded-xl border border-gray-200 shadow-sm"
@@ -151,7 +151,7 @@ const Home = () => {
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
               <SmartImg
-                src={siteImages?.womenFeatureImage || '/images/women-feature.jpeg'}
+                src="/images/gallery2.jpeg"
                 alt="Women in a self-help group meeting"
                 seed="kusum-women-feature"
                 className="w-full h-72 sm:h-80 object-cover rounded-xl border border-rose-100 shadow-sm"

@@ -64,7 +64,7 @@ const About = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             <img
-              src={siteImages?.aboutStoryImage || '/images/about-story.svg'}
+              src={siteImages?.aboutStoryImage || '/images/photos/photo-49.jpg'}
               alt="Kusum Foundation's work in rural Bihar"
               className="w-full h-72 sm:h-80 object-cover rounded-xl border border-gray-200 shadow-sm"
               onError={(e) => { e.target.onerror = null; e.target.src = IMG_FALLBACK; }}
@@ -176,7 +176,7 @@ const About = () => {
               </p>
             </div>
             <img
-              src={siteImages?.aboutWomenImage || '/images/women-feature.svg'}
+              src={siteImages?.aboutWomenImage || '/images/photos/photo-03.jpg'}
               alt="Women's self-help group"
               className="order-1 lg:order-2 w-full h-72 sm:h-80 object-cover rounded-xl border border-rose-100 shadow-sm"
               onError={(e) => { e.target.onerror = null; e.target.src = IMG_FALLBACK; }}

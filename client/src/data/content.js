@@ -5,18 +5,48 @@
 // API responds or if it is unreachable, and it mirrors the server seed so the
 // site always shows real photography.
 //
-// Images use keyless, hotlinkable real-photo services:
-//   flick(keywords, lock) -> a real, theme-matched photo (loremflickr)
-//   face(gender, n)       -> a real portrait photo (randomuser.me)
-// <SmartImg> degrades any broken URL to another real photo, then a gradient.
+// Images are 100% LOCAL — the foundation's own uploaded photos, bundled with
+// the site under client/public/images/photos. NO external/online image service
+// is used anywhere. flick() and face() keep their original signatures so every
+// existing reference just resolves to a real, bundled photo:
+//   flick(keywords, lock) -> a real field/programme photo (from the pool)
+//   face(gender, n)       -> a real portrait photo (from the portrait pool)
+// <SmartImg> degrades any broken URL to a local rose-gradient placeholder.
 import {
   Users, Scissors, GraduationCap, HeartPulse, Utensils, Sprout,
 } from 'lucide-react';
 
-export const flick = (kw, lock, w = 800, h = 600) =>
-  `https://loremflickr.com/${w}/${h}/${kw}?lock=${lock}`;
-export const face = (gender, n) =>
-  `https://randomuser.me/api/portraits/${gender}/${n}.jpg`;
+// Full pool of the foundation's uploaded photographs.
+const PHOTOS = [
+  'photo-01.png', 'photo-02.png', 'photo-03.jpg', 'photo-04.jpg', 'photo-05.png',
+  'photo-06.jpg', 'photo-07.jpg', 'photo-08.png', 'photo-09.jpg', 'photo-10.png',
+  'photo-11.jpg', 'photo-12.jpg', 'photo-13.jpg', 'photo-14.png', 'photo-15.png',
+  'photo-16.jpg', 'photo-17.jpg', 'photo-18.jpg', 'photo-19.jpg', 'photo-20.jpg',
+  'photo-21.jpg', 'photo-22.jpg', 'photo-23.jpg', 'photo-24.jpg', 'photo-25.jpg',
+  'photo-26.jpg', 'photo-27.webp', 'photo-28.webp', 'photo-29.jpg', 'photo-30.jpg',
+  'photo-31.jpg', 'photo-32.jpg', 'photo-33.jpg', 'photo-34.jpg', 'photo-35.jpg',
+  'photo-36.jpg', 'photo-37.jpg', 'photo-38.jpg', 'photo-39.jpg', 'photo-40.jpg',
+  'photo-41.webp', 'photo-42.jpg', 'photo-43.jpg', 'photo-44.jpg', 'photo-45.jpg',
+  'photo-46.jpg', 'photo-47.jpg', 'photo-48.jpg', 'photo-49.jpg', 'photo-50.jpg',
+  'photo-51.jpg', 'photo-52.jpg', 'photo-53.jpg',
+].map((f) => `/images/photos/${f}`);
+
+// Subset that are close-up portraits — used for people/testimonial avatars.
+const PORTRAITS = [
+  'photo-01.png', 'photo-13.jpg', 'photo-14.png', 'photo-30.jpg', 'photo-31.jpg',
+  'photo-32.jpg', 'photo-33.jpg', 'photo-35.jpg', 'photo-36.jpg', 'photo-37.jpg',
+].map((f) => `/images/photos/${f}`);
+
+// Stable hash so the same arguments always map to the same photo (no flicker).
+const pluck = (arr, seed) => {
+  const s = String(seed);
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return arr[h % arr.length];
+};
+
+export const flick = (kw, lock) => pluck(PHOTOS, `${kw}|${lock}`);
+export const face = (gender, n) => pluck(PORTRAITS, `${gender}|${n}`);
 
 // Theme keywords for auto-filling an empty "From the field" gallery with
 // matching real photos. Known programmes/projects map to hand-picked keywords;
@@ -58,7 +88,7 @@ export const orgInfo = {
   tagline: 'Empowering rural women, youth and families in Bihar since 2008.',
   address: 'Katesar, Saran District, Bihar 841301, India',
   phone: '+91 7419921792',
-  email: 'kusumfoundationinfo@gmail.com',
+  email: 'kusumfoundatiooinfo@gmail.com',
   registration: {
     society: 'BIH/2008/0192847 (Societies Registration Act, 1860)',
     pan: 'AABTK1907K',
@@ -81,10 +111,10 @@ export const socials = {
 // falls back to the matching file in client/public/images/. Keeping the local
 // file as the fallback means the site never breaks if a photo is unset.
 export const siteImages = {
-  heroImage: '/images/hero.jpeg',            // Home hero (top-right)
-  womenFeatureImage: '/images/women-feature.jpeg', // Home "When a woman earns…"
-  aboutStoryImage: '/images/about-story.svg', // About "How it began"
-  aboutWomenImage: '/images/women-feature.svg', // About "Why women first"
+  heroImage: '/images/gallery1.jpeg',            // Home hero (top-right)
+  womenFeatureImage: '/images/gallery2.jpeg', // Home "When a woman earns…"
+  aboutStoryImage: '/images/photos/photo-49.jpg', // About "How it began"
+  aboutWomenImage: '/images/photos/photo-03.jpg', // About "Why women first"
 };
 
 export const impactStats = [

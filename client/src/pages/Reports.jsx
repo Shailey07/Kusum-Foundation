@@ -12,38 +12,33 @@ const typeColor = {
   Audit: 'bg-amber-50 text-amber-700',
 };
 
-const downloadReport = (r, orgInfo) => {
-  // Real PDFs live in client/public/reports and are served at r.fileUrl.
-  if (r.fileUrl) {
-    const a = document.createElement('a');
-    a.href = r.fileUrl;
-    a.download = r.fileUrl.split('/').pop();
-    a.target = '_blank';
-    a.rel = 'noopener';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    return;
-  }
-  // Fallback: generate a text summary if no file is attached yet.
-  const reg = orgInfo.registration || {};
-  const text = [
-    `${orgInfo.name}`,
-    `${r.title}`,
-    `Type: ${r.type} report · ${r.pages} pages`,
-    `------------------------------------------`,
-    r.summary,
-    ``,
-    `Registered office: ${orgInfo.address}`,
-    `${reg.society || ''}`,
-  ].join('\n');
-  const blob = new Blob([text], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${r.title.replace(/[^a-z0-9]+/gi, '-')}.txt`;
-  a.click();
-  URL.revokeObjectURL(url);
+// The 5 audited PDFs ship in client/public/reports. Resolve every report to a
+// real bundled PDF (by explicit fileUrl, then title, then year+type) so the
+// button always opens a genuine document — even if an API record was saved
+// without a fileUrl.
+const BUNDLED_BY_TITLE = {
+  'Annual Report 2024–25': '/reports/annual-report-2024-25.pdf',
+  'Audited Financial Statement 2024–25': '/reports/audited-financial-statement-2024-25.pdf',
+  'Independent Auditor’s Report 2024–25': '/reports/independent-auditor-report-2024-25.pdf',
+  'Annual Report 2023–24': '/reports/annual-report-2023-24.pdf',
+  'Audited Financial Statement 2023–24': '/reports/audited-financial-statement-2023-24.pdf',
+};
+const BUNDLED_BY_YEARTYPE = {
+  '2025|Annual': '/reports/annual-report-2024-25.pdf',
+  '2025|Financial': '/reports/audited-financial-statement-2024-25.pdf',
+  '2025|Audit': '/reports/independent-auditor-report-2024-25.pdf',
+  '2024|Annual': '/reports/annual-report-2023-24.pdf',
+  '2024|Financial': '/reports/audited-financial-statement-2023-24.pdf',
+};
+
+const resolvePdf = (r) =>
+  r.fileUrl || BUNDLED_BY_TITLE[r.title] || BUNDLED_BY_YEARTYPE[`${r.year}|${r.type}`] || '';
+
+// Open the PDF in a new tab so it renders inline in the browser's viewer
+// (from where the reader can also download it).
+const openReport = (r) => {
+  const url = resolvePdf(r);
+  if (url) window.open(url, '_blank', 'noopener,noreferrer');
 };
 
 const Reports = () => {
@@ -103,8 +98,8 @@ const Reports = () => {
                 <h3 className="mt-1 text-sm font-medium text-gray-900 truncate">{r.title}</h3>
               </div>
               <button
-                onClick={() => downloadReport(r, orgInfo)}
-                title="Download"
+                onClick={() => openReport(r)}
+                title="Open PDF"
                 className="p-2.5 rounded-md text-gray-500 hover:bg-white hover:text-rose-700 border border-transparent hover:border-gray-200 transition shrink-0"
               >
                 <Download size={17} />

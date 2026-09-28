@@ -25,7 +25,7 @@ const Footer = () => {
 
   const address = orgInfo.address || 'Katesar, Saran District, Bihar, India';
   const phone = orgInfo.phone || '+91 7419921792';
-  const email = orgInfo.email || 'kusumfoundationinfo@gmail.com';
+  const email = orgInfo.email || 'kusumfoundatiooinfo@gmail.com';
 
   const socialLinks = Object.entries(SOCIAL_ICONS)
     .filter(([key]) => socials && socials[key])
