@@ -45,8 +45,20 @@ const pluck = (arr, seed) => {
   return arr[h % arr.length];
 };
 
-export const flick = (kw, lock) => pluck(PHOTOS, `${kw}|${lock}`);
-export const face = (gender, n) => pluck(PORTRAITS, `${gender}|${n}`);
+// Deterministic index into a pool by a NUMBER: the same number always returns
+// the same photo, and consecutive numbers return consecutive photos. Galleries
+// pass consecutive `lock` values, so each strip stays in a stable order with no
+// repeats — unlike a hash, which scatters and can collide into duplicates. This
+// is what keeps the offline fallback arrangement orderly (the live/DB images are
+// preserved exactly by localImage/localPortrait via fromUploads).
+const at = (arr, i) => {
+  const n = Math.trunc(Number(i));
+  const len = arr.length;
+  return arr[(((Number.isFinite(n) ? n : 0) % len) + len) % len];
+};
+
+export const flick = (kw, lock) => at(PHOTOS, lock);
+export const face = (gender, n) => at(PORTRAITS, n);
 
 // Sanitiser used by SiteData. Guarantees any image reference resolves to a
 // bundled local photo. A path we ship (/images/… or an inline data: URI) is
@@ -57,10 +69,23 @@ export const face = (gender, n) => pluck(PORTRAITS, `${gender}|${n}`);
 // still holds old external or /uploads URLs.
 const isBundled = (u) =>
   typeof u === 'string' && (u.startsWith('/images/') || u.startsWith('data:'));
+
+// Admin-uploaded photos are stored as an absolute URL ending in
+// `/uploads/<file>` (…onrender.com/uploads/… or localhost:5000/uploads/…). The
+// SAME file is bundled under `/images/photos/<file>`, so resolve to that — this
+// keeps the EXACT photo the admin picked, in the EXACT slot (no reordering, no
+// duplication), and it keeps working after deploy where the server's /uploads
+// folder is wiped. Only genuinely external URLs (loremflickr/randomuser/picsum
+// or any other http host) or empty values fall through to a pool photo.
+const fromUploads = (u) => {
+  if (typeof u !== 'string') return null;
+  const m = u.match(/\/uploads\/([^/?#]+)/);
+  return m ? `/images/photos/${m[1]}` : null;
+};
 export const localImage = (url, seed = '') =>
-  isBundled(url) ? url : pluck(PHOTOS, `${seed}|${url || ''}`);
+  isBundled(url) ? url : (fromUploads(url) || pluck(PHOTOS, `${seed}|${url || ''}`));
 export const localPortrait = (url, seed = '') =>
-  isBundled(url) ? url : pluck(PORTRAITS, `${seed}|${url || ''}`);
+  isBundled(url) ? url : (fromUploads(url) || pluck(PORTRAITS, `${seed}|${url || ''}`));
 
 // A real bundled photo for <SmartImg> to fall back to if its given src ever
 // fails to load — so a broken image degrades to a genuine photo, NEVER a
@@ -147,28 +172,28 @@ export const impactStats = [
 // __C_STORIES__
 
 export const stories = [
-  { name: 'Priya Kumari', role: 'Tailoring graduate', location: 'Katesar, Bihar', image: face('women', 65),
+  { name: 'Priya Kumari', role: 'Tailoring graduate', location: 'Katesar, Bihar', image: face('women', 0),
     quote: 'The sewing course gave me more than a skill — it gave me the courage to earn for my family.',
     story: 'When I joined the sewing class I could barely stitch a straight line. Today I run a small tailoring business from home, my daughter goes to school, and I pay her fees myself.' },
-  { name: 'Anita Devi', role: 'Self-help group leader', location: 'Katesar, Bihar', image: face('women', 68),
+  { name: 'Anita Devi', role: 'Self-help group leader', location: 'Katesar, Bihar', image: face('women', 1),
     quote: "The women's group taught me that my voice matters — at home and in the community.",
     story: "After my husband's illness our family struggled. The self-help group didn't just help me start a small business — it showed me that women can lead change. I now mentor other women in my village." },
-  { name: 'Sunita Kumari', role: 'Embroidery entrepreneur', location: 'Katesar, Bihar', image: face('women', 12),
+  { name: 'Sunita Kumari', role: 'Embroidery entrepreneur', location: 'Katesar, Bihar', image: face('women', 2),
     quote: 'I used to wait for work to come to me. Now buyers come looking for my designs.',
     story: 'The embroidery course helped me turn a hobby into an income. With a small group of women, I now take orders for festival wear and supply a shop in the town nearby.' },
-  { name: 'Ravi Kumar', role: 'Digital skills trainee', location: 'Saran District, Bihar', image: face('men', 32),
+  { name: 'Ravi Kumar', role: 'Digital skills trainee', location: 'Saran District, Bihar', image: face('men', 3),
     quote: 'I got my first job after the computer training. My future finally feels like my own.',
     story: "I dropped out after class 10 and was helping at a shop. The basic computer course helped me land a data-entry job nearby. I now support my parents and my younger brother's studies." },
-  { name: 'Meena Devi', role: 'Kitchen-garden farmer', location: 'Katesar, Bihar', image: face('women', 45),
+  { name: 'Meena Devi', role: 'Kitchen-garden farmer', location: 'Katesar, Bihar', image: face('women', 4),
     quote: 'My little garden feeds my children and still leaves enough to sell.',
     story: 'The kitchen-garden training taught me to grow vegetables through the year. What began as food for the house is now a small, steady income at the weekly market.' },
-  { name: 'Rekha Kumari', role: 'Adult-literacy learner', location: 'Katesar, Bihar', image: face('women', 22),
+  { name: 'Rekha Kumari', role: 'Adult-literacy learner', location: 'Katesar, Bihar', image: face('women', 5),
     quote: 'For the first time in my life, I signed my own name.',
     story: "I never went to school as a child. The evening literacy class changed that. Now I read my children's homework, keep my group's savings record, and help other women learn too." },
-  { name: 'Kavita Devi', role: 'Micro-enterprise owner', location: 'Katesar, Bihar', image: face('women', 50),
+  { name: 'Kavita Devi', role: 'Micro-enterprise owner', location: 'Katesar, Bihar', image: face('women', 6),
     quote: 'A small loan and a little training were all I needed to begin.',
     story: 'With support from my self-help group I started making papad and pickles at home. Today four women work with me, and our little enterprise supplies shops across the block.' },
-  { name: 'Pooja Kumari', role: 'Scholarship student', location: 'Saran District, Bihar', image: face('women', 28),
+  { name: 'Pooja Kumari', role: 'Scholarship student', location: 'Saran District, Bihar', image: face('women', 7),
     quote: 'The scholarship kept me in school when my family could not.',
     story: 'When money was tight, dropping out felt certain. The scholarship and study material meant I could stay. I am now the first girl in my family to reach college.' },
 ];
